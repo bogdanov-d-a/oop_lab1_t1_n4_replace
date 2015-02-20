@@ -4,9 +4,11 @@
 #include "stdafx.h"
 #include "ReplaceMachine.h"
 
-void DoReplace(const char * const inputFileName, const char * const outputFileName,
+int DoReplace(const char * const inputFileName, const char * const outputFileName,
 	const char * const searchString, const char * const replaceString)
 {
+	int result = 0;
+
 	if (searchString[0] != '\0')
 	{
 		FILE * inputFile;
@@ -31,6 +33,7 @@ void DoReplace(const char * const inputFileName, const char * const outputFileNa
 			else
 			{
 				puts("Output file open error");
+				result = 2;
 			}
 
 			fclose(inputFile);
@@ -38,25 +41,31 @@ void DoReplace(const char * const inputFileName, const char * const outputFileNa
 		else
 		{
 			puts("Input file open error");
+			result = 1;
 		}
 	}
 	else
 	{
-		CopyFile(inputFileName, outputFileName,	false);
+		if (CopyFile(inputFileName, outputFileName, false) == 0)
+		{
+			puts("Copy file error");
+			result = 3;
+		}
 	}
+
+	return result;
 }
 
 int _tmain(int argc, _TCHAR* argv[])
 {
 	if (argc == 5)
 	{
-		DoReplace(argv[1], argv[2], argv[3], argv[4]);
+		return DoReplace(argv[1], argv[2], argv[3], argv[4]);
 	}
 	else
 	{
 		assert(argc > 0);
 		printf("Usage: %s <input file> <output file> <search string> <replace string>\n", argv[0]);
+		return 4;
 	}
-
-	return 0;
 }
