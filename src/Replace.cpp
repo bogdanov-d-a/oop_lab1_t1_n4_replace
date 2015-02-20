@@ -11,11 +11,11 @@ void DoReplace(const char * const inputFileName, const char * const outputFileNa
 	{
 		FILE * inputFile;
 
-		if (fopen_s(&inputFile, inputFileName, "r"))
+		if (fopen_s(&inputFile, inputFileName, "r") == 0)
 		{
 			FILE * outputFile;
 
-			if (fopen_s(&outputFile, outputFileName, "w"))
+			if (fopen_s(&outputFile, outputFileName, "w") == 0)
 			{
 				CReplaceMachine replaceMachine(searchString, replaceString, outputFile);
 
