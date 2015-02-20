@@ -3,8 +3,8 @@
 class CReplaceMachine
 {
 public:
-	CReplaceMachine(const char *, const char *, FILE *);
-	void SendChar(char);
+	CReplaceMachine(const char * findString, const char * replaceString, FILE * outputFile);
+	void SendChar(char c);
 	void WriteAbsorbedData();
 
 protected:
