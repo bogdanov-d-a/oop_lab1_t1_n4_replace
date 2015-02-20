@@ -13,3 +13,8 @@
 
 
 // TODO: reference additional headers your program requires here
+
+#include <cstring>
+#include <cstdint>
+#include <cassert>
+#include <windows.h>
