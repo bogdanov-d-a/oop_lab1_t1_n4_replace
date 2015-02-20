@@ -21,7 +21,6 @@ void CReplaceMachine::SendChar(char c)
 	if (c != m_findString[m_absorbedAmount])
 	{
 		WriteAbsorbedData();
-		m_absorbedAmount = 0;
 	}
 
 	if (c == m_findString[m_absorbedAmount])
@@ -45,4 +44,5 @@ void CReplaceMachine::SendChar(char c)
 void CReplaceMachine::WriteAbsorbedData()
 {
 	fwrite(m_findString, sizeof(char), m_absorbedAmount, m_outputFile);
+	m_absorbedAmount = 0;
 }
