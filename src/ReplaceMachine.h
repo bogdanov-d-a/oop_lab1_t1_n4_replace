@@ -16,4 +16,6 @@ protected:
 
 	FILE * m_outputFile;
 	uint32_t m_absorbedAmount;
+
+	void PushBuffer();
 };
