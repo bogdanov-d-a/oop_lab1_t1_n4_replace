@@ -4,8 +4,8 @@
 #include "stdafx.h"
 #include "ReplaceMachine.h"
 
-int DoReplace(const char * const inputFileName, const char * const outputFileName,
-	const char * const searchString, const char * const replaceString)
+int DoReplace(const char inputFileName[], const char outputFileName[],
+	const char searchString[], const char replaceString[])
 {
 	int result = 0;
 
@@ -27,7 +27,7 @@ int DoReplace(const char * const inputFileName, const char * const outputFileNam
 					replaceMachine.SendChar(tmpChar);
 				}
 
-				replaceMachine.WriteAbsorbedData();
+				replaceMachine.EndDataStream();
 				fclose(outputFile);
 			}
 			else

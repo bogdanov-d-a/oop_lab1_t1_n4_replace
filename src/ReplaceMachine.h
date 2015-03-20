@@ -3,19 +3,27 @@
 class CReplaceMachine
 {
 public:
-	CReplaceMachine(const char * findString, const char * replaceString, FILE * outputFile);
+	CReplaceMachine(const char findString[], const char replaceString[], FILE *outputFile);
+	~CReplaceMachine();
 	void SendChar(char c);
-	void WriteAbsorbedData();
+	void EndDataStream();
 
 protected:
-	const char * m_findString;
+	const char *m_findString;
 	size_t m_findStringLength;
 
-	const char * m_replaceString;
+	const char *m_replaceString;
 	size_t m_replaceStringLength;
 
-	FILE * m_outputFile;
-	uint32_t m_absorbedAmount;
+	FILE *m_outputFile;
+	bool m_workComplete;
+	size_t m_absorbedAmount;
 
-	void PushBuffer();
+	void FlushShortestBufferPrefix();
+	void FlushUnneededBufferPart(char newChar);
+	bool FitsToBuffer(char c);
+	bool BufferIsEmpty();
+	static size_t FindLongestSuffixPart(const char str[], size_t strLength, const char suffix[], size_t suffixLength);
+	static bool IsSuffix(const char str[], size_t strLength, const char suffix[], size_t suffixLength);
+	static size_t Min(size_t a, size_t b);
 };

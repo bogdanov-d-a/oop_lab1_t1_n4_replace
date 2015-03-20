@@ -1,38 +1,45 @@
 #include "stdafx.h"
 #include "ReplaceMachine.h"
 
-CReplaceMachine::CReplaceMachine(const char * findString, const char * replaceString, FILE * outputFile)
+CReplaceMachine::CReplaceMachine(const char findString[], const char replaceString[], FILE *outputFile):
+	m_findString(findString),
+	m_findStringLength(strlen(findString)),
+	m_replaceString(replaceString),
+	m_replaceStringLength(strlen(replaceString)),
+	m_outputFile(outputFile),
+	m_workComplete(false),
+	m_absorbedAmount(0)
 {
-	m_findString = findString;
-	m_findStringLength = strlen(findString);
 	assert(m_findStringLength > 0);
+}
 
-	m_replaceString = replaceString;
-	m_replaceStringLength = strlen(replaceString);
-
-	m_outputFile = outputFile;
-	m_absorbedAmount = 0;
+CReplaceMachine::~CReplaceMachine()
+{
+	if (!m_workComplete)
+	{
+		EndDataStream();
+	}
 }
 
 void CReplaceMachine::SendChar(char c)
 {
+	assert(!m_workComplete);
 	assert(m_absorbedAmount < m_findStringLength);
 
-	while (m_absorbedAmount != 0 && c != m_findString[m_absorbedAmount])
-	{
-		PushBuffer();
-	}
+	FlushUnneededBufferPart(c);
 
-	if (c == m_findString[m_absorbedAmount])
+	if (FitsToBuffer(c))
 	{
-		if (m_absorbedAmount == m_findStringLength - 1)
+		const bool bufferWillNowMatchFindString = (m_absorbedAmount == m_findStringLength - 1);
+
+		if (bufferWillNowMatchFindString)
 		{
 			fwrite(m_replaceString, sizeof(char), m_replaceStringLength, m_outputFile);
 			m_absorbedAmount = 0;
 		}
 		else
 		{
-			m_absorbedAmount++;
+			++m_absorbedAmount;
 		}
 	}
 	else
@@ -42,32 +49,73 @@ void CReplaceMachine::SendChar(char c)
 	}
 }
 
-void CReplaceMachine::WriteAbsorbedData()
+void CReplaceMachine::EndDataStream()
 {
+	assert(!m_workComplete);
 	fwrite(m_findString, sizeof(char), m_absorbedAmount, m_outputFile);
-	m_absorbedAmount = 0;
+	m_workComplete = true;
 }
 
-void CReplaceMachine::PushBuffer()
+void CReplaceMachine::FlushShortestBufferPrefix()
 {
-	assert(m_absorbedAmount != 0);
+	assert(!BufferIsEmpty());
+	const size_t longestSuffixPart = FindLongestSuffixPart(m_findString, m_absorbedAmount, m_findString, m_findStringLength);
+	fwrite(m_findString, sizeof(char), m_absorbedAmount - longestSuffixPart, m_outputFile);
+	m_absorbedAmount = longestSuffixPart;
+}
 
-	for (uint32_t delAmount = 1; delAmount <= m_absorbedAmount; ++delAmount)
+size_t CReplaceMachine::FindLongestSuffixPart(const char str[], size_t strLength, const char suffix[], size_t suffixLength)
+{
+	assert(strLength > 0);
+	assert(suffixLength > 0);
+
+	for (size_t suffixPartLength = Min(strLength, suffixLength) - 1; suffixPartLength > 0; --suffixPartLength)
 	{
-		if
-			(
-				m_absorbedAmount == delAmount ||
-				memcmp
-				(
-					m_findString,
-					m_findString + sizeof(char) * delAmount,
-					sizeof(char) * (m_absorbedAmount - delAmount)
-				) == 0
-			)
+		if (IsSuffix(str, strLength, suffix, suffixPartLength))
 		{
-			fwrite(m_findString, sizeof(char), delAmount, m_outputFile);
-			m_absorbedAmount -= delAmount;
-			return;
+			return suffixPartLength;
 		}
+	}
+
+	return 0;
+}
+
+bool CReplaceMachine::IsSuffix(const char str[], size_t strLength, const char suffix[], size_t suffixLength)
+{
+	if (suffixLength > strLength)
+	{
+		return false;
+	}
+
+	if (suffixLength == 0)
+	{
+		return true;
+	}
+
+	const size_t suffixStart = strLength - suffixLength;
+	return (memcmp(str + sizeof(char) * suffixStart, suffix, suffixLength) == 0);
+}
+
+size_t CReplaceMachine::Min(size_t a, size_t b)
+{
+	return ((a <= b) ? a : b);
+}
+
+bool CReplaceMachine::FitsToBuffer(char c)
+{
+	assert(m_absorbedAmount < m_findStringLength);
+	return (c == m_findString[m_absorbedAmount]);
+}
+
+bool CReplaceMachine::BufferIsEmpty()
+{
+	return (m_absorbedAmount == 0);
+}
+
+void CReplaceMachine::FlushUnneededBufferPart(char newChar)
+{
+	while (!BufferIsEmpty() && !FitsToBuffer(newChar))
+	{
+		FlushShortestBufferPrefix();
 	}
 }
