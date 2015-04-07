@@ -8,7 +8,7 @@ public:
 	void SendChar(char c);
 	void EndDataStream();
 
-protected:
+private:
 	const char *m_findString;
 	size_t m_findStringLength;
 
@@ -21,9 +21,8 @@ protected:
 
 	void FlushShortestBufferPrefix();
 	void FlushUnneededBufferPart(char newChar);
-	bool FitsToBuffer(char c);
-	bool BufferIsEmpty();
+	bool FitsToBuffer(char c) const;
+	bool BufferIsEmpty() const;
 	static size_t FindLongestSuffixPart(const char str[], size_t strLength, const char suffix[], size_t suffixLength);
 	static bool IsSuffix(const char str[], size_t strLength, const char suffix[], size_t suffixLength);
-	static size_t Min(size_t a, size_t b);
 };

@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "ReplaceMachine.h"
 
+using namespace std;
+
 CReplaceMachine::CReplaceMachine(const char findString[], const char replaceString[], FILE *outputFile):
 	m_findString(findString),
 	m_findStringLength(strlen(findString)),
@@ -69,7 +71,7 @@ size_t CReplaceMachine::FindLongestSuffixPart(const char str[], size_t strLength
 	assert(strLength > 0);
 	assert(suffixLength > 0);
 
-	for (size_t suffixPartLength = Min(strLength, suffixLength) - 1; suffixPartLength > 0; --suffixPartLength)
+	for (size_t suffixPartLength = min(strLength, suffixLength) - 1; suffixPartLength > 0; --suffixPartLength)
 	{
 		if (IsSuffix(str, strLength, suffix, suffixPartLength))
 		{
@@ -96,18 +98,13 @@ bool CReplaceMachine::IsSuffix(const char str[], size_t strLength, const char su
 	return (memcmp(str + sizeof(char) * suffixStart, suffix, suffixLength) == 0);
 }
 
-size_t CReplaceMachine::Min(size_t a, size_t b)
-{
-	return ((a <= b) ? a : b);
-}
-
-bool CReplaceMachine::FitsToBuffer(char c)
+bool CReplaceMachine::FitsToBuffer(char c) const
 {
 	assert(m_absorbedAmount < m_findStringLength);
 	return (c == m_findString[m_absorbedAmount]);
 }
 
-bool CReplaceMachine::BufferIsEmpty()
+bool CReplaceMachine::BufferIsEmpty() const
 {
 	return (m_absorbedAmount == 0);
 }
